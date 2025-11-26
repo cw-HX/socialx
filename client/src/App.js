@@ -27,7 +27,7 @@ function App() {
 
           <Route exact path='/' element={ <AuthProtector><Home/></AuthProtector>}  />
           <Route path='/landing' element = {<LoginProtector> <LandingPage /> </LoginProtector>} />
-          <Route path='/profile/:id' element = {<AuthProtector><Profile /></AuthProtector>} />
+          <Route path='/profile/:username' element = {<AuthProtector><Profile /></AuthProtector>} />
           <Route path='/chat' element={<AuthProtector><Chat /></AuthProtector>} />
 
       </Routes>

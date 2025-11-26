@@ -7,7 +7,7 @@ const Search = ({searchedUser, setSearchedUser}) => {
   return (
     <div className="searchContainer">
 
-        {searchedUser &&  <div className="searchedUserInfo" onClick={()=> {navigate(`/profile/${searchedUser._id}`);  setSearchedUser();}} >
+        {searchedUser &&  <div className="searchedUserInfo" onClick={()=> {navigate(`/profile/${searchedUser.username}`);  setSearchedUser();}} >
                 <img src={searchedUser.profilePic} alt="" />
                 <div className="searchedUserChatInfo">
                   <span>{searchedUser.username}</span>

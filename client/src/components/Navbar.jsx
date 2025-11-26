@@ -18,7 +18,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const profilePic = localStorage.getItem('profilePic');
-  const userId = localStorage.getItem('userId');
+  const username = localStorage.getItem('username');
 
   const { logout } = useContext(AuthenticationContext);
 
@@ -30,7 +30,7 @@ const Navbar = () => {
         <BsChatSquareText  className="chatbtn btns" onClick={()=> navigate('/chat')} />
         <CgAddR className="createPostbtn btns" onClick={()=> {setIsCreatePostOpen(!isCreatPostOpen); setIsCreateStoryOpen(false)}} />
         <TbNotification className="Notifybtn btns" onClick={()=> setNotificationsOpen(!isNotificationsOpen)}/>
-        <img className="profile" src={profilePic} alt="" onClick={()=> navigate(`/profile/${userId}`)} />
+        <img className="profile" src={profilePic} alt="" onClick={()=> navigate(`/profile/${username}`)} />
         <FiLogOut className="logoutbtn btns" title="Logout" onClick={async ()=> { await logout(); }} />
     </div>
 

@@ -96,7 +96,7 @@ const Post = () => {
         <div className="postTop">
             <div className="postTopDetails">
                 <img src={post.userPic} alt="" className="userpic" />
-                <h3 className="usernameTop" onClick={()=> navigate(`/profile/${post.userId}`)}>{post.userName}</h3>
+                <h3 className="usernameTop" onClick={()=> navigate(`/profile/${post.userName}`)}>{post.userName}</h3>
             </div>
 
             {localStorage.getItem('following').includes(post.userId) || localStorage.getItem('userId') === post.userId ?

@@ -18,7 +18,7 @@ const Profile = () => {
 
   const {socket} = useContext(GeneralContext);
 
-  const {id} = useParams();
+  const {username} = useParams();
   const userId = localStorage.getItem("userId");
 
   const [userProfile, setUserProfile] = useState([]);
@@ -31,18 +31,25 @@ const [isUpdating, setIsUpdating] = useState(false);
 
 
   useEffect(()=>{
+    // lookup user by username via socket
+    if (!username) return;
+    socket.emit('user-search', { username });
 
-    socket.emit("fetch-profile", {_id: id});
+    socket.on('searched-user', ({ user }) => {
+      if (user) {
+        setUserProfile(user);
+        setUpdateProfilePic(user.profilePic);
+        setUpdateProfileUsername(user.username);
+        setUpdateProfileAbout(user.about);
+      }
+    });
 
-    socket.on("profile-fetched", async({profile})=>{
-      setUserProfile(profile);
-      setUpdateProfilePic(profile.profilePic);
-      setUpdateProfileUsername(profile.username);
-      setUpdateProfileAbout(profile.about);
-    })
+    socket.on('searched-user', ({ user }) => {});
 
-
-  },[socket])
+    return () => {
+      socket.off('searched-user');
+    };
+  },[socket, username])
 
 
   const handleUpdate = async () =>{
