@@ -18,36 +18,48 @@ const AuthenticationContextProvider = ({children}) => {
 
   const navigate = useNavigate();
 
+  const [error, setError] = useState('');
+  
+  const API_URL = process.env.REACT_APP_API_URL || '';
+
   const login = async () =>{
+    setError('');
+    
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
 
-    try{
-
+    try {
       const loginInputs = {email: email, password: password}
-        await axios.post('http://localhost:6001/login', loginInputs)
-        .then( async (res)=>{
-            console.log("holaads",res);
-            localStorage.setItem('userToken', res.data.token);
-            localStorage.setItem('userId', res.data.user._id);
-            localStorage.setItem('username', res.data.user.username);
-            localStorage.setItem('email', res.data.user.email);
-            localStorage.setItem('profilePic', res.data.user.profilePic);
-            localStorage.setItem('posts', res.data.user.posts);
-            localStorage.setItem('followers', res.data.user.followers);
-            localStorage.setItem('following', res.data.user.following);
-            navigate('/');
-        }).catch((err) =>{
-            console.log(err);
-        });
-
-    }catch(err){
-        console.log(err);
+      const res = await axios.post(`${API_URL}/login`, loginInputs);
+      
+      if (res.data.token && res.data.user) {
+        console.log("Login successful:", res.data);
+        localStorage.setItem('userToken', res.data.token);
+        localStorage.setItem('userId', res.data.user._id);
+        localStorage.setItem('username', res.data.user.username);
+        localStorage.setItem('email', res.data.user.email);
+        localStorage.setItem('profilePic', res.data.user.profilePic);
+        localStorage.setItem('posts', res.data.user.posts || []);
+        localStorage.setItem('followers', res.data.user.followers || []);
+        localStorage.setItem('following', res.data.user.following || []);
+        navigate('/');
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      if (err.response && err.response.data && err.response.data.msg) {
+        setError(err.response.data.msg);
+      } else {
+        setError('Login failed. Please try again.');
+      }
     }
   }
 
   const register = async () =>{
 
     try{
-        await axios.post('http://localhost:6001/register', inputs)
+        await axios.post(`${API_URL}/register`, inputs)
         .then( async (res)=>{
           localStorage.setItem('userToken', res.data.token);
           localStorage.setItem('userId', res.data.user._id);

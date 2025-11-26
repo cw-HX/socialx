@@ -18,44 +18,53 @@ const Input = () => {
     const userId = localStorage.getItem('userId');
 
 
-    const handleSend = async () =>{
+    const handleSend = async () => {
+      if (!chatData.chatId || (!text.trim() && !file)) {
+        return;
+      }
 
-      if (file){
+      try {
+        let fileUrl = null;
+        if (file) {
+          const storageRef = ref(storage, uuid());
+          const uploadTask = uploadBytesResumable(storageRef, file);
 
-        const storageRef = ref(storage, uuid());
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadTask.on('state_changed', 
-        (snapshot) => {
-            setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
-        }, 
-        (error) => {
-            console.log(error);
-        }, 
-        () => {
-            getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-            console.log('File available at', downloadURL);
-
-            try{
-              let date = new Date() 
-              await socket.emit('new-message', {chatId: chatData.chatId ,id: uuid(), text: text, file: downloadURL, senderId: userId, date: date});
-              setUploadProgress();
-              setText('');
-              setFile(null);
-            }catch(err){
-                console.log(err);
-            }
-
-
-            });
+          await new Promise((resolve, reject) => {
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+              },
+              (error) => {
+                console.error('Upload error:', error);
+                reject(error);
+              },
+              async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                fileUrl = downloadURL;
+                resolve();
+              }
+            );
+          });
         }
-        );
 
-      }else{
+        const messageData = {
+          chatId: chatData.chatId,
+          id: uuid(),
+          text: text.trim(),
+          file: fileUrl,
+          senderId: userId,
+          date: new Date(),
+          senderName: localStorage.getItem('username'),
+          senderPic: localStorage.getItem('profilePic')
+        };
 
-        let date = new Date() 
-        await socket.emit('new-message', {chatId: chatData.chatId ,id: uuid(), text: text,file: '', senderId: userId, date: date});
+        await socket.emit('new-message', messageData);
+        setUploadProgress(undefined);
         setText('');
+        setFile(null);
+      } catch (err) {
+        console.error('Send message error:', err);
+        setUploadProgress(undefined);
       }
 
     }
@@ -68,11 +77,15 @@ const Input = () => {
         <label htmlFor="file" style={{display:'flex'}}>
           <BiImageAdd />
           <p style={{fontSize: '12px'}}>{uploadProgress ? Math.floor(uploadProgress) + '%' : ''}</p>
-        </label>
-        <button onClick={handleSend} >Send</button>
-      </div>
-    </div>
-  )
-}
+                </label>
+                {file && uploadProgress ?
+                    <button disabled>Sending... {Math.round(uploadProgress)}%</button>
+                    :
+                    <button onClick={handleSend}>Send</button>
+                }
+            </div>
+        </div>
+    );
+};
 
-export default Input
+export default Input;

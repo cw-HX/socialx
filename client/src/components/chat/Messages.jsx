@@ -10,28 +10,33 @@ const Messages = () => {
   const {chatData} = useContext(GeneralContext);
   
 
-  useEffect(()=>{
+  useEffect(() => {
+    if (!chatData.chatId) return;
+
     const handleMessagesUpdated = ({ chat }) => {
-      console.log('chatuu', chat);
-      if (chat) {
+      if (chat && chat.messages) {
         setMessages(chat.messages);
       }
     };
   
     const handleNewMessage = async () => {
-      console.log('new message', chatData.chatId);
-      socket.emit('update-messages', { chatId: chatData.chatId });
+      if (chatData.chatId) {
+        socket.emit('update-messages', { chatId: chatData.chatId });
+      }
     };
+
+    // Initial messages load
+    socket.emit('fetch-messages', { chatId: chatData.chatId });
   
+    // Listen for real-time updates
     socket.on('messages-updated', handleMessagesUpdated);
     socket.on('message-from-user', handleNewMessage);
   
     return () => {
-      // Clean up event listeners when the component unmounts
       socket.off('messages-updated', handleMessagesUpdated);
       socket.off('message-from-user', handleNewMessage);
     };
-  },[socket, chatData])
+  }, [socket, chatData.chatId])
 
   return (
     <div className='messages' >

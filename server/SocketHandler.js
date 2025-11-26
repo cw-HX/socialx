@@ -42,14 +42,19 @@ const SocketHandler = (socket) => {
         const user2 = await User.findOne({_id: followingUserId});
         socket.emit('userFollowed', {following: user1.following});
 
-        if ( user2.following.includes(user1._id)   && user1.following.includes(user2._id) ){
-            const newChat = new Chats({
-                _id: user1._id > user2._id ? user1._id + user2._id : user2._id + user1._id
-            })
-
-            const chat = await newChat.save();
+        // Create chat room when users follow each other
+        if (user2.following.includes(user1._id) && user1.following.includes(user2._id)) {
+            const chatId = user1._id > user2._id ? user1._id + user2._id : user2._id + user1._id;
+            const existingChat = await Chats.findById(chatId);
+            
+            if (!existingChat) {
+                const newChat = new Chats({
+                    _id: chatId,
+                    messages: []
+                });
+                const chat = await newChat.save();
+            }
         }
-
     });
 
     socket.on('unFollowUser', async({ownId, followingUserId})=>{
