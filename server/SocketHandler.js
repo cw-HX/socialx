@@ -7,14 +7,18 @@ import User from './models/Users.js'
 const SocketHandler = (socket) => {
   
     socket.on('postLiked', async ({userId, postId}) =>{
-        await Post.updateOne({_id: postId}, {$addToSet: {likes: userId}});
+      await Post.updateOne({_id: postId}, {$addToSet: {likes: userId}});
 
-        socket.emit("likeUpdated");
+      // notify origin and other connected clients that likes updated
+      socket.emit("likeUpdated");
+      socket.broadcast.emit("likeUpdated");
     })
 
     socket.on('postUnLiked', async ({userId, postId}) =>{
-        await Post.updateOne({_id: postId}, {$pull: {likes: userId}});
-        socket.emit("likeUpdated");
+      await Post.updateOne({_id: postId}, {$pull: {likes: userId}});
+      // notify origin and other connected clients that likes updated
+      socket.emit("likeUpdated");
+      socket.broadcast.emit("likeUpdated");
     })
 
     socket.on("fetch-profile", async({_id})=>{
@@ -40,7 +44,9 @@ const SocketHandler = (socket) => {
 
         const user1 = await User.findOne({_id: ownId});
         const user2 = await User.findOne({_id: followingUserId});
-        socket.emit('userFollowed', {following: user1.following});
+      // notify origin and others
+      socket.emit('userFollowed', {following: user1.following});
+      socket.broadcast.emit('userFollowed', {following: user1.following});
 
         // Create chat room when users follow each other
         if (user2.following.includes(user1._id) && user1.following.includes(user2._id)) {
@@ -62,12 +68,16 @@ const SocketHandler = (socket) => {
         await User.updateOne({_id: followingUserId}, {$pull: {followers: ownId}});
 
         const user = await User.findOne({_id: ownId});
-        socket.emit('userUnFollowed', {following: user.following});
+      socket.emit('userUnFollowed', {following: user.following});
+      socket.broadcast.emit('userUnFollowed', {following: user.following});
     });
 
 
     socket.on('makeComment', async({postId, username, comment})=>{
-        await Post.updateOne({_id: postId}, { $push: { comments: [ username, comment]  } });
+      await Post.updateOne({_id: postId}, { $push: { comments: [ username, comment]  } });
+      // notify clients that a comment was added
+      socket.emit('commentUpdated', { postId });
+      socket.broadcast.emit('commentUpdated', { postId });
     });
 
     socket.on('fetch-friends', async ({userId}) =>{
@@ -158,6 +168,10 @@ const SocketHandler = (socket) => {
       socket.on('create-new-story', async({userId, username, userPic, fileType, file, text})=>{
         const newStory = new Stories({userId, username, userPic, fileType, file, text});
         await newStory.save();
+        // after saving, send updated stories to all clients
+        const stories = await Stories.find();
+        socket.emit('stories-fetched', {stories});
+        socket.broadcast.emit('stories-fetched', {stories});
       })
 
       socket.on('fetch-stories', async()=>{
