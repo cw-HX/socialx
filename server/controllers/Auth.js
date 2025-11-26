@@ -17,7 +17,10 @@ const generateToken =(id) =>{
 export const register = async (req, res) =>{
     try{
 
+        console.log('Register request received:', req.method, req.path);
         const {username, email, password, profilePic} = req.body;
+
+        console.log('Register payload:', { username, email, hasPassword: !!password, profilePic });
 
         const salt = await bcrypt.genSalt();
         const passwordHash = await bcrypt.hash(password, salt);

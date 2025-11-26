@@ -31,7 +31,15 @@ app.use(bodyParser.json({limit: "30mb", extended: true}))
 app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
 // configure CORS: allow specific frontend in production or all in development
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
-app.use(cors({ origin: FRONTEND_URL }));
+const corsOptions = {
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+// make sure preflight requests are handled
+app.options('*', cors(corsOptions));
 
 
 app.use('', authRoutes);
@@ -41,7 +49,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: FRONTEND_URL,
-        methods: ['GET', 'POST', 'PUT', 'DELETE']
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     }
 });
 
