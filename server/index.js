@@ -1,4 +1,5 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -11,14 +12,13 @@ import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/Route.js';
 import SocketHandler from './SocketHandler.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 
 // config
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config();
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.use(morgan("common"));
 
 app.use(bodyParser.json({limit: "30mb", extended: true}))
 app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
-// Configure CORS to allow frontend origin in production
+// configure CORS: allow specific frontend in production or all in development
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 app.use(cors({ origin: FRONTEND_URL }));
 
