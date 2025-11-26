@@ -59,23 +59,33 @@ const AuthenticationContextProvider = ({children}) => {
   const register = async () =>{
 
     try{
-        await axios.post(`${API_URL}/register`, inputs)
-        .then( async (res)=>{
-          localStorage.setItem('userToken', res.data.token);
-          localStorage.setItem('userId', res.data.user._id);
-          localStorage.setItem('username', res.data.user.username);
-          localStorage.setItem('email', res.data.user.email);
-          localStorage.setItem('profilePic', res.data.user.profilePic);
-          localStorage.setItem('posts', res.data.user.posts);
-          localStorage.setItem('followers', res.data.user.followers);
-          localStorage.setItem('following', res.data.user.following);  
-          navigate('/');
-        }).catch((err) =>{
-            console.log(err);
-        });
+      const url = `${API_URL}/register`;
+      console.log('Attempting register POST to:', url);
+      console.log('Register payload:', inputs);
+
+      const res = await axios.post(url, inputs, { headers: { 'Content-Type': 'application/json' } });
+
+      if (res && res.data) {
+        localStorage.setItem('userToken', res.data.token);
+        localStorage.setItem('userId', res.data.user._id);
+        localStorage.setItem('username', res.data.user.username);
+        localStorage.setItem('email', res.data.user.email);
+        localStorage.setItem('profilePic', res.data.user.profilePic);
+        localStorage.setItem('posts', res.data.user.posts);
+        localStorage.setItem('followers', res.data.user.followers);
+        localStorage.setItem('following', res.data.user.following);  
+        navigate('/');
+      } else {
+        console.error('Register: unexpected response', res);
+      }
 
     }catch(err){
-        console.log(err);
+        console.error('Register error:', err.response ? err.response.data : err.message || err);
+        if (err.response && err.response.data && err.response.data.msg) {
+          setError(err.response.data.msg);
+        } else {
+          setError('Registration failed. Please try again.');
+        }
     }
   }
 

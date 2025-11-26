@@ -28,8 +28,15 @@ export const register = async (req, res) =>{
         const newUser = new Users({
             username, 
             email,
-            password: passwordHash,
+                    console.log('Register headers:', req.headers);
+                    const {username, email, password, profilePic} = req.body || {};
+
             profilePic
+
+                    // validate input early and return clear errors to client
+                    if (!username || !email || !password) {
+                        console.log('Register failed: missing fields', { username, email, hasPassword: !!password });
+                        return res.status(400).json({ msg: 'Please provide username, email and password' });
         });
 
         const user = await newUser.save();
