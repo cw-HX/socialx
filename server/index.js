@@ -40,16 +40,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// Build cors options: if FRONTEND_URL is '*', allow all origins by reflecting the request origin.
+// During deployment we reflect the request Origin to allow the Vercel frontend to connect.
+// IMPORTANT: This is permissive (reflects any origin); after verification set `FRONTEND_URL`
+// in Render to your production frontend URL and replace with a strict origin check.
 const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin) return callback(null, true); // non-browser requests
-        if (FRONTEND_URL === '*') return callback(null, true);
-        // allow when origin exactly matches FRONTEND_URL
-        if (origin === FRONTEND_URL) return callback(null, true);
-        // otherwise deny
-        return callback(new Error('Not allowed by CORS'));
-    },
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     optionsSuccessStatus: 200
@@ -65,7 +60,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: FRONTEND_URL,
+        origin: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     }
 });
