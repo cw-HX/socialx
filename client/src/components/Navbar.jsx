@@ -6,6 +6,8 @@ import { CgAddR } from "react-icons/cg";
 import { TbNotification } from "react-icons/tb";
 import navProfile from '../images/nav-profile.avif';
 import { GeneralContext } from '../context/GeneralContextProvider';
+import { AuthenticationContext } from '../context/AuthenticationContextProvider';
+import { FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -18,6 +20,8 @@ const Navbar = () => {
   const profilePic = localStorage.getItem('profilePic');
   const userId = localStorage.getItem('userId');
 
+  const { logout } = useContext(AuthenticationContext);
+
   
    return (
     <>
@@ -27,6 +31,7 @@ const Navbar = () => {
         <CgAddR className="createPostbtn btns" onClick={()=> {setIsCreatePostOpen(!isCreatPostOpen); setIsCreateStoryOpen(false)}} />
         <TbNotification className="Notifybtn btns" onClick={()=> setNotificationsOpen(!isNotificationsOpen)}/>
         <img className="profile" src={profilePic} alt="" onClick={()=> navigate(`/profile/${userId}`)} />
+        <FiLogOut className="logoutbtn btns" title="Logout" onClick={async ()=> { await logout(); }} />
     </div>
 
 
