@@ -31,10 +31,27 @@ app.use(bodyParser.json({limit: "30mb", extended: true}))
 app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
 // configure CORS: allow specific frontend in production or all in development
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+
+// Log preflight requests for debugging
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        console.log('Preflight request:', req.method, req.path, 'Origin:', req.headers.origin, 'AC-Request-Headers:', req.headers['access-control-request-headers']);
+    }
+    next();
+});
+
+// Build cors options: if FRONTEND_URL is '*', allow all origins by reflecting the request origin.
 const corsOptions = {
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true); // non-browser requests
+        if (FRONTEND_URL === '*') return callback(null, true);
+        // allow when origin exactly matches FRONTEND_URL
+        if (origin === FRONTEND_URL) return callback(null, true);
+        // otherwise deny
+        return callback(new Error('Not allowed by CORS'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
