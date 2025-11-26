@@ -4,7 +4,8 @@ import socketIoClient from 'socket.io-client';
 export const GeneralContext = createContext();
 
 
-const WS = 'http://localhost:6001';
+const API_URL = process.env.REACT_APP_API_URL || '';
+const WS = API_URL || window.location.origin;
 
 const socket = socketIoClient(WS);
 

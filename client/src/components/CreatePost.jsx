@@ -3,6 +3,7 @@ import '../styles/CreatePosts.css'
 import {RxCross2} from 'react-icons/rx' 
 import { GeneralContext } from '../context/GeneralContextProvider'
 import axios from "axios";
+import { GeneralContext } from '../context/GeneralContextProvider'
 import {ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import {storage} from '../firebase.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const CreatePost = () => {
 
-    const {isCreatPostOpen, setIsCreatePostOpen} = useContext(GeneralContext);
+    const {isCreatPostOpen, setIsCreatePostOpen, socket} = useContext(GeneralContext);
 
     const [postType, setPostType] = useState('photo');
     const [postDescription, setPostDescription] = useState('');
@@ -45,14 +46,15 @@ const CreatePost = () => {
             getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
             console.log('File available at', downloadURL);
 
-            try{
+                try{
+                const API_URL = process.env.REACT_APP_API_URL || '';
                 const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments:{"New user": "This is my forst comment"}}
-                await axios.post('http://localhost:6001/createPost', inputs)
-                .then( async (res)=>{
-                }).catch((err) =>{
-                    console.log(err);
-                });
-        
+                const res = await axios.post(`${API_URL}/createPost`, inputs);
+                if (res && res.status === 201) {
+                    // ask server via socket to broadcast latest posts or fetch them
+                    if (socket) socket.emit('fetch-all-posts');
+                    setUploadProgress(100);
+                }
             }catch(err){
                 console.log(err);
             }

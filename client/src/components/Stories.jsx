@@ -18,20 +18,23 @@ const Stories = () => {
         setIsCreateStoryOpen(true)
     }
 
-    useEffect(() => {
-        fetchStories();
-      }, []);
+        useEffect(() => {
+                fetchStories();
+                if (socket) {
+                        socket.on('stories-fetched', ({stories}) => setStories(stories));
+                }
+            }, []);
     
-      const fetchStories = async () => { 
-        try {
-          
-            const response = await axios.get('http://localhost:6001/fetchAllStories');
-            setStories(response.data)
-            console.log(response.data[0])
-        } catch (error) {
-          console.error(error);
-        }
-      };
+            const fetchStories = async () => { 
+                try {
+                        const API_URL = process.env.REACT_APP_API_URL || '';
+                        const response = await axios.get(`${API_URL}/fetchAllStories`);
+                        setStories(response.data)
+                        console.log(response.data[0])
+                } catch (error) {
+                    console.error(error);
+                }
+            };
 
       const handleOpenStory = async (story) =>{
        

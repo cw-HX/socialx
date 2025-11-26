@@ -58,7 +58,8 @@ const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:6001/fetchAllPosts');
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const response = await axios.get(`${API_URL}/fetchAllPosts`);
       const fetchedPosts = response.data;
       setPosts(fetchedPosts);
     } catch (error) {

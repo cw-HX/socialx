@@ -19,19 +19,25 @@ const Post = () => {
 
     const [posts, setPosts] = useState([]);
 
-    useEffect(() => {
-        fetchPosts();
-      }, []);
+        useEffect(() => {
+                fetchPosts();
+                if (socket) {
+                        socket.on('all-posts-fetched', ({posts}) => {
+                                setPosts(posts);
+                        });
+                }
+            }, []);
     
-      const fetchPosts = async () => { 
-        try {
-          const response = await axios.get('http://localhost:6001/fetchAllPosts');
-          const fetchedPosts = response.data;
-          setPosts(fetchedPosts);
-        } catch (error) {
-          console.error(error);
-        }
-      };
+            const fetchPosts = async () => { 
+                try {
+                    const API_URL = process.env.REACT_APP_API_URL || '';
+                    const response = await axios.get(`${API_URL}/fetchAllPosts`);
+                    const fetchedPosts = response.data;
+                    setPosts(fetchedPosts);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
 
 
 
